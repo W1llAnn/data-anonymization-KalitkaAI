@@ -1,0 +1,40 @@
+services:
+  anongw:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      ANONGW_MODEL_BASE_URL: http://mock-llm:9000
+      ANONGW_SERVICE_API_KEY: dev-service-key
+      ANONGW_MODEL_API_KEY: dev-model-key
+    depends_on:
+      mock-llm:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')",
+        ]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  mock-llm:
+    build: .
+    command: python -m uvicorn tests.mock_llm.app:app --host 0.0.0.0 --port 9000
+    ports:
+      - "9000:9000"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:9000/health')",
+        ]
+      interval: 5s
+      timeout: 3s
+      retries: 5
