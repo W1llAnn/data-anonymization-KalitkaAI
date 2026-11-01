@@ -1,4 +1,4 @@
-"""Хранилище соответствий в памяти (каркас недели 1)."""
+"""Временное хранилище соответствий в памяти (каркас недели 1)."""
 
 from __future__ import annotations
 
@@ -6,9 +6,9 @@ from anongw.contracts import Marker
 
 
 class InMemoryMappingStore:
-    """Словарь с ключом (user_id, context_id, marker); записи живут до перезапуска.
+    """Хранилище на dict с ключом (user_id, context_id, marker).
 
-    SQLite-хранилище с TTL-очисткой — Р5 (недели 1–2 и 4, docs/git-workflow.md §4).
+    SQLite-версия с TTL и фоновой очисткой — Р5, неделя 2 (docs/architecture.md §6).
     """
 
     def __init__(self) -> None:
@@ -21,5 +21,4 @@ class InMemoryMappingStore:
         self._data[(user_id, context_id, marker.marker)] = marker
 
     async def cleanup_expired(self) -> int:
-        """TTL в каркасе нет — удалять нечего."""
         return 0
