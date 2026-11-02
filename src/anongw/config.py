@@ -18,6 +18,8 @@ class Settings(BaseSettings):
     # Хранилище соответствий
     mapping_db_path: str = "./mapping.db"
     mapping_ttl_hours: int = 24
+    # Период фоновой TTL-очистки (docs/mapping/context-id.md)
+    cleanup_interval_seconds: int = 60
 
     # Ограничение размера inline-файлов (МБ)
     max_file_mb: int = 10
