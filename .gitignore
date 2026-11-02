@@ -90,5 +90,8 @@ eval/checkpoints/
 # Локальная база соответствий
 *.db
 
+# Локальные заметки
+notes.md
+
 # Дампы SQL игнорируем, но DDL хранилища — часть кода
 !src/anongw/mapping/schema.sql

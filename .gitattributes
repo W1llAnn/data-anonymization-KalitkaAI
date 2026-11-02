@@ -1,0 +1,10 @@
+# Единые переводы строк для всех ОС
+* text=auto eol=lf
+
+# Бинарные файлы не нормализуем
+*.png binary
+*.jpg binary
+*.zip binary
+*.pdf binary
+*.docx binary
+*.db binary
