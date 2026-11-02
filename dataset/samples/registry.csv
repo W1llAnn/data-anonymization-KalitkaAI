@@ -1,0 +1,11 @@
+example_id,genre,template,format,split,n_entities,PERSON,PHONE,EMAIL,ADDRESS,DOC_ID
+ex_0000,letter,letter_plain,text,train,0,0,0,0,0,0
+ex_0001,document,document_cert,text,train,5,1,1,1,1,1
+ex_0002,interview,interview_intro,text,train,4,1,1,1,1,0
+ex_0003,letter,letter_contact,text,train,4,2,1,1,0,0
+ex_0004,document,document_cert,text,train,5,1,1,1,1,1
+ex_0005,interview,interview_intro,text,train,4,1,1,1,1,0
+ex_0006,letter,letter_contact,text,train,4,2,1,1,0,0
+ex_0007,document,document_cert,text,train,5,1,1,1,1,1
+ex_0008,interview,interview_intro,text,train,4,1,1,1,1,0
+ex_0009,letter,letter_contact,text,train,4,2,1,1,0,0
