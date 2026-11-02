@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 from httpx import ASGITransport, AsyncClient
 
-from mock_llm.app import app
+from tests.mock_llm.app import app
 
 pytestmark = pytest.mark.unit
 

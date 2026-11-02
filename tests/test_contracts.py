@@ -5,9 +5,7 @@ from __future__ import annotations
 import pytest
 
 from anongw.anonymizer.service import PassThroughAnonymizer
-from anongw.config import Settings
-from anongw.contracts import EntityType, Marker, UnsupportedInputError
-from anongw.files.extractor import TxtDocxFileExtractor
+from anongw.contracts import EntityType, Marker
 from anongw.mapping.store import InMemoryMappingStore
 from anongw.restorer.service import MappingRestorer
 
@@ -40,11 +38,3 @@ async def test_mapping_isolated_by_user_and_context() -> None:
     assert await store.get("u2", "c1", "PERSON_1") is None
     assert await store.get("u1", "c2", "PERSON_1") is None
     assert await store.get("u1", "c1", "PERSON_1") is not None
-
-
-async def test_file_extractor_skeleton_rejects_explicitly() -> None:
-    """До реализации Р4 файл отклоняется понятной ошибкой, а не пустым текстом."""
-    extractor = TxtDocxFileExtractor(Settings())
-
-    with pytest.raises(UnsupportedInputError):
-        await extractor.extract_text("dGVzdA==", "test.txt")
