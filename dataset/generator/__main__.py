@@ -30,6 +30,7 @@ def main() -> None:
     with args.out.open("w", encoding="utf-8", newline="\n") as stream:
         for example in examples:
             record = asdict(example)
+            record["id"] = record.pop("example_id")  # поле схемы — «id»
             record["entities"] = [asdict(span) for span in example.entities]
             stream.write(json.dumps(record, ensure_ascii=False) + "\n")
 
