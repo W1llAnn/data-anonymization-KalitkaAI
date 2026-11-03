@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
 
+from anongw.api.pipeline import collect_input_texts
 from anongw.api.schemas import ResponsesApiRequest
 
 router = APIRouter()
@@ -16,12 +17,15 @@ async def health() -> dict[str, str]:
 
 
 @router.post("/v1/responses")
-async def create_response(body: ResponsesApiRequest) -> JSONResponse:
-    """Неделя 2: тело проверено схемой — всё вне профиля получает понятную
-    ошибку ДО обращения к модели. Разбор input_file — Р4 (пуш 4), полный
-    конвейер (анонимизация → модель → ответ) — неделя 3 (M1), поэтому
-    на валидный запрос отвечаем явным 501.
+async def create_response(body: ResponsesApiRequest, request: Request) -> JSONResponse:
+    """Неделя 2: проверяем схему запроса и разбираем inline-файлы.
+
+    Неподдерживаемые и повреждённые файлы отклоняются до обращения к модели.
+    Полный конвейер (анонимизация → модель → ответ) — неделя 3 (M1),
+    поэтому на валидный запрос пока отвечаем явным 501.
     """
+    await collect_input_texts(body, request.app.state.extractor)
+
     return JSONResponse(
         status_code=501,
         content={
