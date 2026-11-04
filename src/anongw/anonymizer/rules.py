@@ -80,7 +80,6 @@ def detect_strict(text: str) -> list[Span]:
         if _snils_valid(_digits(span.text)):
             found.append(span)
     found += _spans(text, _PASSPORT_RE, EntityType.DOC_ID)
-    
     for match in _ACCOUNT_RE.finditer(text):
         found.append(
             Span(
@@ -90,7 +89,6 @@ def detect_strict(text: str) -> list[Span]:
                 match.group(1),
             )
         )
-
     for span in _spans(text, _INN_12_RE, EntityType.DOC_ID):
         if _inn12_valid(_digits(span.text)):
             found.append(span)
