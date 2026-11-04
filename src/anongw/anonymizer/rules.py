@@ -21,9 +21,7 @@ _PASSPORT_RE = re.compile(r"(?<!\d)\d{4}\s\d{6}(?!\d)")
 _SNILS_RE = re.compile(r"(?<!\d)\d{3}-\d{3}-\d{3}\s\d{2}(?!\d)")
 _INN_10_RE = re.compile(r"(?<!\d)\d{10}(?!\d)")
 _INN_12_RE = re.compile(r"(?<!\d)\d{12}(?!\d)")
-_ACCOUNT_RE = re.compile(
-    r"(?i)сч[её]т\s*[:№]?\s*(\d{20})(?!\d)"
-)
+_ACCOUNT_RE = re.compile(r"(?i)сч[её]т\s*[:№]?\s*(\d{20})(?!\d)")
 
 
 def _digits(value: str) -> list[int]:
