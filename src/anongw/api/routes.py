@@ -18,14 +18,12 @@ async def health() -> dict[str, str]:
 
 @router.post("/v1/responses")
 async def create_response(body: ResponsesApiRequest, request: Request) -> JSONResponse:
-    """Неделя 2: проверяем схему запроса и разбираем inline-файлы.
-
-    Неподдерживаемые и повреждённые файлы отклоняются до обращения к модели.
-    Полный конвейер (анонимизация → модель → ответ) — неделя 3 (M1),
-    поэтому на валидный запрос пока отвечаем явным 501.
+    """Неделя 2: тело проверено схемой, файлы input_file разобраны сразу —
+    битые и неподдерживаемые падают понятной ошибкой ДО обращения к модели.
+    Полный конвейер (анонимизация → модель → ответ) — неделя 3 (M1), поэтому
+    на валидный запрос отвечаем явным 501.
     """
     await collect_input_texts(body, request.app.state.extractor)
-
     return JSONResponse(
         status_code=501,
         content={

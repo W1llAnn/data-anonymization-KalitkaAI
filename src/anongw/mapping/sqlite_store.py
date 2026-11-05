@@ -65,7 +65,7 @@ class SqliteMappingStore:
                     user_id,
                     context_id,
                     marker.marker,
-                    str(marker.entity_type.value),
+                    str(marker.entity_type),
                     marker.original_value,
                     marker.normalized_value,
                     now.isoformat(),

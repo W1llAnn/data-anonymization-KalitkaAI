@@ -29,9 +29,11 @@ jobs:
       - name: Mypy
         run: mypy
 
-      - name: Генератор датасета (smoke)
+      - name: Генератор датасета (smoke + валидация)
         if: hashFiles('dataset/generator/**') != ''
-        run: python -m dataset.generator --count 3 --seed 7 --out /tmp/samples.jsonl --registry /tmp/registry.csv
+        run: |
+          python -m dataset.generator --count 3 --seed 7 --out /tmp/samples.jsonl --registry /tmp/registry.csv
+          python -m dataset.generator.validate /tmp/samples.jsonl
 
       - name: Pytest (unit)
         run: pytest -q -m unit

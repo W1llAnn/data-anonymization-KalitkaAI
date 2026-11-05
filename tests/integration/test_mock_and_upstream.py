@@ -1,4 +1,4 @@
-"""Интеграционные smoke-проверки: mock-LLM и upstream-клиент."""
+"""Интеграционные smoke-проверки недели 1: mock-LLM и upstream-клиент."""
 
 from __future__ import annotations
 
