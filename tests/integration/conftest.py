@@ -12,6 +12,7 @@ import uvicorn
 from httpx import ASGITransport, AsyncClient
 
 from anongw.app import create_app
+from tests.conftest import TEST_SERVICE_KEY
 from tests.mock_llm.app import create_app as create_mock_app
 
 
@@ -46,7 +47,12 @@ async def service_client(
     """Клиент сервиса, у которого внешней моделью назначен запущенный mock."""
     monkeypatch.setenv("ANONGW_MAPPING_DB_PATH", str(tmp_path / "mapping.db"))
     monkeypatch.setenv("ANONGW_MODEL_BASE_URL", mock_llm_url)
+    monkeypatch.setenv("ANONGW_SERVICE_API_KEY", TEST_SERVICE_KEY)
     app = create_app()
     transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://test") as http:
+    async with AsyncClient(
+        transport=transport,
+        base_url="http://test",
+        headers={"Authorization": f"Bearer {TEST_SERVICE_KEY}"},
+    ) as http:
         yield http

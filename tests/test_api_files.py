@@ -33,8 +33,8 @@ async def test_txt_file_passes_file_stage(client: AsyncClient) -> None:
         ],
     }
     response = await client.post("/v1/responses", json=body)
-    # Файл разобран успешно; 501 — конвейер приходит в неделе 3
-    assert response.status_code == 501
+    # Файл разобран успешно; дальше — недоступная в unit модель (502)
+    assert response.status_code == 502
 
 
 async def test_pdf_file_rejected_before_model(client: AsyncClient) -> None:
@@ -80,4 +80,4 @@ async def test_cp1251_txt_inside_data_uri(client: AsyncClient) -> None:
         ],
     }
     response = await client.post("/v1/responses", json=body)
-    assert response.status_code == 501
+    assert response.status_code == 502
