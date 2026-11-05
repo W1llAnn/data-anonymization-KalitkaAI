@@ -106,6 +106,30 @@ class SqliteMappingStore:
             rows = self._conn.execute(query, params).fetchall()
         return {row["context_id"]: int(row["hits"]) for row in rows}
 
+    async def latest_created_at(self, user_id: str, context_id: str) -> str | None:
+        """Последняя активность контекста — тай-брейк resolve_context."""
+        with self._lock:
+            row = self._conn.execute(
+                "SELECT MAX(created_at) AS ts FROM mappings WHERE user_id = ? AND context_id = ?",
+                (user_id, context_id),
+            ).fetchone()
+        return row["ts"] if row is not None else None
+
+    async def next_marker_number(self, user_id: str, context_id: str, entity_type: str) -> int:
+        """Следующий свободный номер маркера типа в контексте (сквозная нумерация)."""
+        with self._lock:
+            rows = self._conn.execute(
+                "SELECT marker FROM mappings "
+                "WHERE user_id = ? AND context_id = ? AND entity_type = ?",
+                (user_id, context_id, entity_type),
+            ).fetchall()
+        numbers = [
+            int(row["marker"].rsplit("_", 1)[1])
+            for row in rows
+            if row["marker"].rsplit("_", 1)[-1].isdigit()
+        ]
+        return max(numbers, default=0) + 1
+
     async def cleanup_expired(self) -> int:
         with self._lock:
             cursor = self._conn.execute(
