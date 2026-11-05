@@ -21,11 +21,28 @@ _PASSPORT_RE = re.compile(r"(?<!\d)\d{4}\s\d{6}(?!\d)")
 _SNILS_RE = re.compile(r"(?<!\d)\d{3}-\d{3}-\d{3}\s\d{2}(?!\d)")
 _INN_10_RE = re.compile(r"(?<!\d)\d{10}(?!\d)")
 _INN_12_RE = re.compile(r"(?<!\d)\d{12}(?!\d)")
-_ACCOUNT_RE = re.compile(r"(?i)сч[её]т\s*[:№]?\s*(\d{20})(?!\d)")
+# Карта: 13–19 цифр слитно либо группами по 4 (16/19); валидность — алгоритм Луна.
+# ОМС (16 цифр) использует совместимый алгоритм, поэтому при выделении ОМС в
+# отдельный тип понадобится контекстное слово.
+_CARD_PLAIN_RE = re.compile(r"(?<!\d)\d{13,19}(?!\d)")
+_CARD_GROUPED_RE = re.compile(r"(?<!\d)(?:\d{4}[ -]){3}\d{4}(?:[ -]\d{3})?(?!\d)")
+# Счёт: 20 цифр сами по себе неоднозначны, детектим только с контекстным словом
+_ACCOUNT_RE = re.compile(r"сч[её]т\w*\s*(?:№|N|#)?\s*(\d{20})(?!\d)", re.IGNORECASE)
 
 
 def _digits(value: str) -> list[int]:
     return [int(ch) for ch in value if ch.isdigit()]
+
+
+def _luhn_valid(digits: list[int]) -> bool:
+    total = 0
+    for position, digit in enumerate(reversed(digits)):
+        if position % 2 == 1:
+            digit *= 2
+            if digit > 9:
+                digit -= 9
+        total += digit
+    return total % 10 == 0
 
 
 def _inn10_valid(digits: list[int]) -> bool:
@@ -80,21 +97,23 @@ def detect_strict(text: str) -> list[Span]:
         if _snils_valid(_digits(span.text)):
             found.append(span)
     found += _spans(text, _PASSPORT_RE, EntityType.DOC_ID)
-    for match in _ACCOUNT_RE.finditer(text):
-        found.append(
-            Span(
-                match.start(1),
-                match.end(1),
-                EntityType.DOC_ID,
-                match.group(1),
-            )
-        )
+
     for span in _spans(text, _INN_12_RE, EntityType.DOC_ID):
         if _inn12_valid(_digits(span.text)):
             found.append(span)
     for span in _spans(text, _INN_10_RE, EntityType.DOC_ID):
         if _inn10_valid(_digits(span.text)):
             found.append(span)
+
+    for span in _spans(text, _CARD_PLAIN_RE, EntityType.DOC_ID):
+        if _luhn_valid(_digits(span.text)):
+            found.append(span)
+    for span in _spans(text, _CARD_GROUPED_RE, EntityType.DOC_ID):
+        if _luhn_valid(_digits(span.text)):
+            found.append(span)
+    for match in _ACCOUNT_RE.finditer(text):
+        start, end = match.span(1)  # ПДн — только номер, слово «счёт» остаётся в тексте
+        found.append(Span(start, end, EntityType.DOC_ID, match.group(1)))
 
     found += _spans(text, _PHONE_RE, EntityType.PHONE)
 
