@@ -53,7 +53,8 @@ def normalize(value: str, etype: EntityType) -> str:
 Порядок применения при разметке одного текста:
 
 ```
-1. STRICT_RULES   — телефоны, email, ИНН/СНИЛС/паспорт (regex + контрольные суммы)
+1. STRICT_RULES   — телефоны, email, ИНН/СНИЛС/паспорт, банковские карты
+                    (алгоритм Луна), расчётные счета (20 цифр + контекстное слово «счёт»)
 2. MODEL          — PERSON, ADDRESS (дообученная BIO-модель)
 3. NAME_DICT      — словарь имён + pymorphy3 (страховка recall для PERSON)
 ```
