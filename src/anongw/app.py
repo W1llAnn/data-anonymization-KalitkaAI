@@ -10,7 +10,7 @@ from contextlib import asynccontextmanager, suppress
 from fastapi import FastAPI
 
 from anongw import __version__
-from anongw.anonymizer.service import PassThroughAnonymizer
+from anongw.anonymizer.persistent import PersistentAnonymizer
 from anongw.api.errors import register_error_handlers
 from anongw.api.routes import router
 from anongw.config import Settings
@@ -53,7 +53,7 @@ def create_app() -> FastAPI:
     mapping_store = SqliteMappingStore(settings.mapping_db_path, settings.mapping_ttl_hours)
     app.state.settings = settings
     app.state.mapping_store = mapping_store
-    app.state.anonymizer = PassThroughAnonymizer()  # анонимизатор поверх хранилища — Р5, пуш 5
+    app.state.anonymizer = PersistentAnonymizer(mapping_store)
     app.state.restorer = MappingRestorer(mapping_store)
     app.state.extractor = TxtDocxFileExtractor(settings)
     app.state.upstream = HttpxUpstreamClient(settings)
