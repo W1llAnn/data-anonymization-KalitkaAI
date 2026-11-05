@@ -8,7 +8,7 @@
 from __future__ import annotations
 
 from anongw.anonymizer.normalize import normalize_value
-from anongw.anonymizer.rules import detect_strict
+from anongw.anonymizer.rules import detect
 from anongw.contracts import AnonymizationResult, Marker
 from anongw.mapping.context import MarkerNumberingStore
 
@@ -20,7 +20,7 @@ class PersistentAnonymizer:
         self._store = store
 
     async def anonymize(self, text: str, *, user_id: str, context_id: str) -> AnonymizationResult:
-        spans = detect_strict(text)
+        spans = detect(text)
         replacements: list[tuple[int, int, Marker]] = []
         created: dict[str, Marker] = {}
 

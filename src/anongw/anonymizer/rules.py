@@ -1,14 +1,16 @@
-"""Rule-детекторы строгих форматов (неделя 2, пуш 2, Р2).
+"""Rule-детекторы: строгие форматы и адреса (недели 2–3, Р2).
 
-Телефоны, email, ИНН/СНИЛС/паспорт. ИНН и СНИЛС проверяются контрольными
-суммами — «неоднозначные числа» (номера заказов, даты) не проходят и остаются
-в тексте нетронутыми (docs/ml/marker-scheme.md §3, STRICT_RULES).
+Строгие форматы (телефоны, email, ИНН/СНИЛС/паспорт, карты, счета) проверяются
+контрольными суммами — «неоднозначные числа» остаются в тексте нетронутыми.
+Адреса — канонические записи с сокращениями (г./ул./д./кв.); «рыхлые» адреса
+без маркеров — работа модели (неделя 6+). Персоны — словарь в names.py.
 """
 
 from __future__ import annotations
 
 import re
 
+from anongw.anonymizer.names import detect_persons
 from anongw.contracts import EntityType, Span
 
 _PHONE_RE = re.compile(
@@ -28,6 +30,14 @@ _CARD_PLAIN_RE = re.compile(r"(?<!\d)\d{13,19}(?!\d)")
 _CARD_GROUPED_RE = re.compile(r"(?<!\d)(?:\d{4}[ -]){3}\d{4}(?:[ -]\d{3})?(?!\d)")
 # Счёт: 20 цифр сами по себе неоднозначны, детектим только с контекстным словом
 _ACCOUNT_RE = re.compile(r"сч[её]т\w*\s*(?:№|N|#)?\s*(\d{20})(?!\d)", re.IGNORECASE)
+
+# Адрес: канонические сегменты с сокращениями; хотя бы город или улица
+_CITY_SEG = r"(?:г|гор(?:од)?)\.?\s*[А-ЯЁ][а-яё-]+"
+_STREET_SEG = r"(?:ул|улица|пр-т|проспект|пер|переулок|ш|шоссе)\.?\s*[А-ЯЁ][а-яё-]+"
+_HOUSE_SEG = r"д(?:ом)?\.?\s*\d+(?:\s*(?:к|корп|стр)\.?\s*\w+)?"
+_FLAT_SEG = r"кв(?:артира)?\.?\s*\d+"
+_TAIL = rf"(?:\s*,\s*{_HOUSE_SEG})?(?:\s*,\s*{_FLAT_SEG})?"
+_ADDRESS_RE = re.compile(rf"{_CITY_SEG}(?:\s*,\s*{_STREET_SEG})?{_TAIL}|{_STREET_SEG}{_TAIL}")
 
 
 def _digits(value: str) -> list[int]:
@@ -117,4 +127,17 @@ def detect_strict(text: str) -> list[Span]:
 
     found += _spans(text, _PHONE_RE, EntityType.PHONE)
 
+    return _resolve_overlaps(found)
+
+
+def detect(text: str) -> list[Span]:
+    """Полный rule-конвейер: строгие форматы + адреса + персоны (словарь).
+
+    Порядок добавления задаёт приоритет при пересечениях (строгие форматы
+    сильнее адресов, адреса — сильнее персон). Модель подключается в неделе 6
+    и занимает место между адресами и словарём.
+    """
+    found = detect_strict(text)
+    found += _spans(text, _ADDRESS_RE, EntityType.ADDRESS)
+    found += detect_persons(text)
     return _resolve_overlaps(found)
