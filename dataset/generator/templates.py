@@ -236,3 +236,72 @@ def build_example(rng: random.Random, index: int) -> Example:
     """Циклически чередует жанры, чтобы малые выборки были сбалансированы."""
     builder = BUILDERS[index % len(BUILDERS)]
     return builder(rng, index)
+
+
+# --- Контрольные шаблоны (ТЗ: шаблоны контрольных документов отличаются) ---
+
+
+def build_control_letter(rng: random.Random, index: int) -> Example:
+    """Контрольное письмо-подтверждение: имя в дательном, телефон, ловушка-заказ."""
+    person = rng.choice(NAME_FORMS)
+    parts = [
+        "Подтверждение №",
+        str(rng.randint(100, 999)),
+        "\nУважаемый ",
+        Slot("PERSON", person["dat"], "e1"),
+        "!\n\n",
+        f"Ваш заказ {rng.randint(10000, 99999)} принят в обработку. ",
+        "Менеджер свяжется с вами по номеру ",
+        Slot("PHONE", _phone(rng), "e2"),
+        ".\n\n",
+        "Служба доставки",
+    ]
+    text, spans = render_parts(parts)
+    return Example(f"ctl_{index:04d}", "letter", "control_letter_confirm", text, tuple(spans))
+
+
+def build_control_document(rng: random.Random, index: int) -> Example:
+    """Контрольная доверенность: имя дважды, валидный паспорт, адрес."""
+    person = rng.choice(NAME_FORMS)
+    parts = [
+        "ДОВЕРЕННОСТЬ\n\n",
+        "Я, ",
+        Slot("PERSON", person["nom"], "e1"),
+        ", документ ",
+        Slot("DOC_ID", generate_passport(rng), "e2"),
+        ", зарегистрирован(а) по адресу: ",
+        Slot("ADDRESS", _address(rng), "e3"),
+        ", доверяю получить корреспонденцию.\n\n",
+        "Контакт для связи: ",
+        Slot("EMAIL", _email(rng), "e4"),
+        ". Дата: ",
+        f"{rng.randint(10, 28)}.12.2026",
+    ]
+    text, spans = render_parts(parts)
+    return Example(f"ctl_{index:04d}", "document", "control_document_proxy", text, tuple(spans))
+
+
+def build_control_interview(rng: random.Random, index: int) -> Example:
+    """Контрольное интервью: имя в винительном, город-адрес, телефон."""
+    person = rng.choice(NAME_FORMS)
+    parts = [
+        "Корреспондент встретился с ",
+        Slot("PERSON", person["acc"], "e1"),
+        " у него дома.\n\n",
+        "— Давно живёте в ",
+        Slot("ADDRESS", f"г. {rng.choice(CITIES)}", "e2"),
+        "?\n— Пять лет.\n\n",
+        "— Телефон для читателей: ",
+        Slot("PHONE", _phone(rng), "e3"),
+        ".",
+    ]
+    text, spans = render_parts(parts)
+    return Example(f"ctl_{index:04d}", "interview", "control_interview_home", text, tuple(spans))
+
+
+CONTROL_BUILDERS: list = [build_control_letter, build_control_document, build_control_interview]
+
+
+def build_control_example(rng: random.Random, index: int) -> Example:
+    builder = CONTROL_BUILDERS[index % len(CONTROL_BUILDERS)]
+    return builder(rng, index)
