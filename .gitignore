@@ -87,6 +87,9 @@ Keys_Kalitka_AI_1.pdf
 eval/checkpoints/
 *.ckpt
 
+# Производные BIO-файлы (генерируются eval/convert_to_bio.py)
+dataset/train/bio/
+
 # Локальная база соответствий
 *.db
 
