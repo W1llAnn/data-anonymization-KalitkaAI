@@ -67,6 +67,27 @@
 | Хранилище: TTL, изоляция, поиск контекстов | `test_mapping_sqlite.py` |
 | Mock + upstream на реальном HTTP | `tests/integration/` (smoke) |
 
+## Закрыто на неделе 3 (M1)
+
+| № реестра | Проверка | Тест |
+|---|---|---|
+| 1 | input строка | `test_e2e_m1.py::test_e2e_string_input_anonymized` |
+| 2 | input массив | `test_e2e_m1.py::test_instructions_and_array_input_anonymized` |
+| 3 | instructions с ПДн | там же |
+| 4 | пустой input | `test_contract_profile.py::test_004_empty_input_rejected_with_clear_error` |
+| 7 (non-stream) | объект Response | `test_contract_profile.py::test_007_response_object_contract` |
+| 10 | режим Б в обычном ответе | `test_e2e_restore.py::test_mode_b_restores_original_values` |
+| 13, 14 | неизвестные маркеры | `test_e2e_restore.py::test_mode_b_keeps_unknown_markers`, `test_restore_static.py` |
+| 15 | продолжение нумерации между запросами | `test_e2e_m1.py::test_context_continues_between_requests` |
+| 16 | повторные упоминания — один маркер | `test_contract_profile.py::test_016_repeated_mentions_same_marker` |
+| 23 | TXT в конвейере | `test_e2e_m1.py::test_inline_file_text_anonymized` |
+| 26, 27, 28 | PDF / file_id / изображения | `test_api_files.py`, `test_blocklist.py` |
+| 31, 32 | неподдерживаемое поле / store=true | `test_blocklist.py` |
+| 33 | некорректный JSON | `test_contract_profile.py::test_033_malformed_json_rejected` |
+| 34 | нет ПДн в запросе к модели | `test_e2e_m1.py::test_no_pii_leak_to_model` |
+| 35 (заготовка) | нет ПДн в логах (caplog) | `test_contract_profile.py::test_035_no_pii_in_service_logs` |
+| — | персоны/адреса e2e | `test_e2e_names.py` |
+
 ## Требования к каждой проверке при реализации
 
 1. Известные ПДн фиксируются в тесте как константы; после прогона — их отсутствие
