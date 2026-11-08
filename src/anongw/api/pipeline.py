@@ -6,7 +6,7 @@ from collections.abc import Awaitable, Callable
 from typing import Any
 
 from anongw.anonymizer.normalize import normalize_value
-from anongw.anonymizer.rules import detect_strict
+from anongw.anonymizer.rules import detect
 from anongw.api.schemas import InputFilePart, InputTextPart, MessageItem, ResponsesApiRequest
 from anongw.contracts import Anonymizer, FileExtractor
 from anongw.files.datauri import parse_data_uri
@@ -31,7 +31,7 @@ async def collect_normalized_values(
     """Нормализованные значения ПДн всех текстов — вход resolve_context."""
     values: list[str] = []
     for text in await collect_input_texts(request, extractor):
-        for span in detect_strict(text):
+        for span in detect(text):
             values.append(normalize_value(span.text, span.entity_type))
     return values
 
