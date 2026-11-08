@@ -13,7 +13,7 @@ import time
 import uuid
 from typing import Annotated, Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 # --- Части входных сообщений ---
 
@@ -74,6 +74,16 @@ class ResponsesApiRequest(BaseModel):
     instructions: str | None = None
     input: str | list[MessageItem]
     tools: list[FunctionTool] | None = None
+
+    @field_validator("input")
+    @classmethod
+    def _reject_empty_input(cls, value: str | list[MessageItem]) -> str | list[MessageItem]:
+        if isinstance(value, str) and not value.strip():
+            raise ValueError("input не должен быть пустой строкой")
+        if isinstance(value, list) and not value:
+            raise ValueError("input не должен быть пустым списком")
+        return value
+
     stream: bool = False
     store: Literal[False] = False  # store=true отклоняется валидацией
 

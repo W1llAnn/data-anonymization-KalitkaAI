@@ -14,7 +14,7 @@ async def test_request_with_string_input_passes(client: AsyncClient) -> None:
     response = await client.post(
         "/v1/responses", json={"model": "test-model", "input": "Иван Петров прислал акт"}
     )
-    assert response.status_code == 501  # схема принята, конвейер — неделя 3
+    assert response.status_code == 502  # схема принята, дальше — недоступная в unit модель
 
 
 async def test_request_with_message_array_passes(client: AsyncClient) -> None:
@@ -29,7 +29,7 @@ async def test_request_with_message_array_passes(client: AsyncClient) -> None:
         "store": False,
     }
     response = await client.post("/v1/responses", json=body)
-    assert response.status_code == 501
+    assert response.status_code == 502
 
 
 async def test_input_file_with_inline_data_passes(client: AsyncClient) -> None:
@@ -49,7 +49,7 @@ async def test_input_file_with_inline_data_passes(client: AsyncClient) -> None:
         ],
     }
     response = await client.post("/v1/responses", json=body)
-    assert response.status_code == 501
+    assert response.status_code == 502
 
 
 async def test_store_true_rejected_with_clear_error(client: AsyncClient) -> None:

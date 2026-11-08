@@ -6,10 +6,10 @@ from httpx import AsyncClient
 pytestmark = pytest.mark.unit
 
 
-async def test_responses_returns_explicit_not_implemented(client: AsyncClient) -> None:
-    """Точка /v1/responses до реализации конвейера отвечает явным 501, а не ложным успехом."""
+async def test_valid_request_reaches_upstream_stage(client: AsyncClient) -> None:
+    """Схема и конвейер пройдены: без живой модели — явный 502, а не ложный успех."""
     response = await client.post("/v1/responses", json={"model": "test", "input": "текст"})
-    assert response.status_code == 501
+    assert response.status_code == 502
     body = response.json()
-    assert body["error"]["type"] == "not_implemented"
+    assert body["error"]["type"] == "upstream_error"
     assert body["error"]["message"]

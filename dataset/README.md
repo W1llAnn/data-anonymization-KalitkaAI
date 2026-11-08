@@ -7,24 +7,36 @@
 
 ```
 dataset/
-├── generator/            # генератор, пулы, шаблоны, валидатор
+├── generator/            # генератор, пулы, шаблоны, валидатор, экспорт файлов
 ├── samples/              # образцы недели 1 (10 примеров)
+├── files/                # примеры недели 3 файлами: 7 TXT + 3 DOCX
 └── train/
     ├── train_w2.jsonl    # обучающая выборка недели 2: 75 примеров (seed 202)
-    └── registry_w2.csv   # реестр выборки недели 2
+    ├── train_w3.jsonl    # обучающая выборка недели 3: 150 примеров (seed 303)
+    ├── control_w3.jsonl  # контрольная подвыборка недели 3: 30 примеров (seed 304,
+    │                     #   отдельные шаблоны control_*, не участвуют в обучении)
+    └── registry_*.csv    # реестры выборок
 ```
+
+Контрольные шаблоны (`control_letter_confirm`, `control_document_proxy`,
+`control_interview_home`) не пересекаются с обучающими — требование ТЗ.
+Полная контрольная выборка 100+ примеров — неделя 5.
 
 ## Запуск генератора
 
 ```bash
-python -m dataset.generator --count 75 --seed 202 --split train \
-    --out dataset/train/train_w2.jsonl --registry dataset/train/registry_w2.csv
-python -m dataset.generator.validate dataset/train/train_w2.jsonl
+python -m dataset.generator --count 150 --seed 303 --split train \
+    --out dataset/train/train_w3.jsonl --registry dataset/train/registry_w3.csv \
+    --export 10 --export-dir dataset/files
+python -m dataset.generator --count 30 --seed 304 --split control \
+    --out dataset/train/control_w3.jsonl --registry dataset/train/control_registry_w3.csv
+python -m dataset.generator.validate dataset/train/train_w3.jsonl
 ```
 
-Параметры: `--count`, `--seed` (воспроизводимость), `--split train|control`,
-`--out`, `--registry`. Один и тот же сид даёт один и тот же набор — фиксируйте
-сид и версию в реестре при сборке выборок.
+Параметры: `--count`, `--seed` (воспроизводимость), `--split train|control`
+(control генерирует только контрольные шаблоны), `--out`, `--registry`,
+`--export N` + `--export-dir` (7 TXT + 3 DOCX на каждые 10; формат отмечается
+в реестре). Один и тот же сид даёт один и тот же набор.
 
 Валидатор проверяет: уникальность id, границы спанов, совпадение текста спана,
 один entity_id → один тип в пределах примера, отсутствие пересечений спанов.
