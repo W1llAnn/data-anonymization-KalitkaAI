@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -15,11 +16,10 @@ class Settings(BaseSettings):
     model_api_key: str = "dev-model-key"
     model_base_url: str = "http://localhost:9000"
 
-    # Хранилище соответствий
+    # Хранилище соответствий: срок жизни и интервал чистки — строго положительные
     mapping_db_path: str = "./mapping.db"
-    mapping_ttl_hours: int = 24
-    # Период фоновой TTL-очистки (docs/mapping/context-id.md)
-    cleanup_interval_seconds: int = 60
+    mapping_ttl_hours: int = Field(default=24, gt=0)
+    cleanup_interval_seconds: int = Field(default=60, gt=0)
 
     # Ограничение размера inline-файлов (МБ)
-    max_file_mb: int = 10
+    max_file_mb: int = Field(default=10, gt=0)
