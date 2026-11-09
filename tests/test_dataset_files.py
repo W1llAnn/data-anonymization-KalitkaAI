@@ -27,7 +27,7 @@ def test_export_docx_roundtrip(tmp_path: Path) -> None:
     assert text == "Первая строка\nВторая строка"
 
 
-def test_week3_files_match_jsonl() -> None:
+def test_files_match_jsonl() -> None:
     """Каждый экспортированный файл соответствует тексту своей записи JSONL."""
     rows = {
         r["id"]: r
@@ -39,11 +39,11 @@ def test_week3_files_match_jsonl() -> None:
         )
     }
     files = sorted(Path("dataset/files").glob("ex_*"))
-    assert len(files) == 10
+    assert len(files) == 30
 
     txt_count = sum(1 for f in files if f.suffix == ".txt")
     docx_count = sum(1 for f in files if f.suffix == ".docx")
-    assert (txt_count, docx_count) == (7, 3)
+    assert (txt_count, docx_count) == (21, 9)
 
     for path in files:
         record = rows[path.stem]

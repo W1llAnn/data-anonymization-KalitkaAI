@@ -58,7 +58,7 @@ def build_letter(rng: random.Random, index: int) -> Example:
     parts: list[str | Slot]
     template: str
 
-    if variant < 0.15:
+    if variant < 0.12:
         # Без ПДн (обязательная категория ТЗ)
         parts = [
             "Здравствуйте!\n\n",
@@ -67,7 +67,7 @@ def build_letter(rng: random.Random, index: int) -> Example:
             "С уважением,\nОтдел делопроизводства",
         ]
         template = "letter_plain"
-    elif variant < 0.5:
+    elif variant < 0.35:
         # Напоминание: имя в двух падежах, сумма и срок — неоднозначные числа,
         # «горячая линия 8-800-XXX-XX-XX» — ловушка, похожая на контакт
         parts = [
@@ -80,7 +80,7 @@ def build_letter(rng: random.Random, index: int) -> Example:
             "С уважением, служба поддержки",
         ]
         template = "letter_reminder"
-    elif variant < 0.65:
+    elif variant < 0.5:
         # Служебный тикет: логин-идентификатор и номер тикета — ловушки
         parts = [
             "Тикет №",
@@ -95,7 +95,7 @@ def build_letter(rng: random.Random, index: int) -> Example:
             ".",
         ]
         template = "letter_ticket"
-    elif variant < 0.85:
+    elif variant < 0.68:
         # Реквизиты оплаты: карта (Лун) и расчётный счёт; номер договора — ловушка
         card = generate_card(rng, grouped=rng.random() < 0.7)
         parts = [
@@ -115,6 +115,22 @@ def build_letter(rng: random.Random, index: int) -> Example:
             ".",
         ]
         template = "letter_requisites"
+    elif variant < 0.85:
+        # Приглашение на встречу: время и кабинет — неоднозначные числа, адрес офиса
+        parts = [
+            "Приглашаем ",
+            Slot("PERSON", person["acc"], "e1"),
+            " на встречу с командой.\n\n",
+            f"Когда: {rng.randint(10, 28)}.11.2026 в {rng.randint(10, 18)}:00, ",
+            f"переговорная {rng.randint(1, 12)}.\n",
+            "Где: ",
+            Slot("ADDRESS", _address(rng), "e2"),
+            ".\n\n",
+            "Подтвердите участие по телефону ",
+            Slot("PHONE", _phone(rng), "e3"),
+            ".",
+        ]
+        template = "letter_meeting"
     else:
         parts = [
             "Здравствуйте, ",
@@ -141,7 +157,8 @@ def build_document(rng: random.Random, index: int) -> Example:
     parts: list[str | Slot]
     template: str
 
-    if rng.random() < 0.5:
+    roll = rng.random()
+    if roll < 0.35:
         # Справка: паспорт или СНИЛС (валидная контрольная сумма), адрес, контакты
         doc = generate_passport(rng) if rng.random() < 0.5 else generate_snils(rng)
         parts = [
@@ -161,7 +178,7 @@ def build_document(rng: random.Random, index: int) -> Example:
             ".",
         ]
         template = "document_cert"
-    else:
+    elif roll < 0.7:
         # Заявление: валидный ИНН (10 или 12 цифр) + адрес; номер дела — ловушка
         inn = generate_inn10(rng) if rng.random() < 0.5 else generate_inn12(rng)
         parts = [
@@ -179,6 +196,24 @@ def build_document(rng: random.Random, index: int) -> Example:
             ".",
         ]
         template = "document_application"
+    else:
+        # Акт выполненных работ: карта и счёт, подпись ФИО; номер акта — ловушка
+        parts = [
+            f"АКТ №{rng.randint(100, 999)} выполненных работ\n\n",
+            "Исполнитель: ",
+            Slot("PERSON", person["nom"], "e1"),
+            ".\nОплата: карта ",
+            Slot("DOC_ID", generate_card(rng, grouped=rng.random() < 0.5), "e2"),
+            ", счёт ",
+            Slot("DOC_ID", generate_account(rng), "e3"),
+            ".\n\n",
+            f"Сумма: {rng.randint(10, 500)} 000 руб. ",
+            "Электронная копия — на ",
+            Slot("EMAIL", _email(rng), "e4"),
+            ".\n\nПодпись: ",
+            Slot("PERSON", person["acc"], "e1"),
+        ]
+        template = "document_act"
 
     text, spans = render_parts(parts)
     return Example(f"ex_{index:04d}", "document", template, text, tuple(spans))
@@ -189,7 +224,8 @@ def build_interview(rng: random.Random, index: int) -> Example:
     parts: list[str | Slot]
     template: str
 
-    if rng.random() < 0.6:
+    roll = rng.random()
+    if roll < 0.45:
         parts = [
             "Интервью с ",
             Slot("PERSON", person["nom"], "e1"),
@@ -208,7 +244,7 @@ def build_interview(rng: random.Random, index: int) -> Example:
             ".",
         ]
         template = "interview_intro"
-    else:
+    elif roll < 0.8:
         # Рыхлый адрес (только улица) — сложный случай для детекции
         parts = [
             "Беседовал корреспондент с ",
@@ -224,6 +260,23 @@ def build_interview(rng: random.Random, index: int) -> Example:
             ".",
         ]
         template = "interview_loose"
+    else:
+        # Командировка: два адреса и паспорт; номер рейса — ловушка
+        parts = [
+            "Из командировочного дневника ",
+            Slot("PERSON", person["dat"], "e1"),
+            f".\n\nРейс SU-{rng.randint(1000, 9999)} вылетел по расписанию. Из ",
+            Slot("ADDRESS", f"г. {rng.choice(CITIES)}", "e2"),
+            " прибыли в ",
+            Slot("ADDRESS", f"г. {rng.choice(CITIES)}", "e3"),
+            ".\n\n",
+            "Для брони отеля администратор просил паспорт: ",
+            Slot("DOC_ID", generate_passport(rng), "e4"),
+            ". Контакты для связи: ",
+            Slot("PHONE", _phone(rng), "e5"),
+            ".",
+        ]
+        template = "interview_trip"
 
     text, spans = render_parts(parts)
     return Example(f"ex_{index:04d}", "interview", template, text, tuple(spans))
