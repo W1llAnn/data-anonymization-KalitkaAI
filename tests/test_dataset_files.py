@@ -43,7 +43,7 @@ def test_files_match_jsonl() -> None:
 
     txt_count = sum(1 for f in files if f.suffix == ".txt")
     docx_count = sum(1 for f in files if f.suffix == ".docx")
-    assert (txt_count, docx_count) == (7, 3)
+    assert (txt_count, docx_count) == (21, 9)
 
     for path in files:
         record = rows[path.stem]
