@@ -27,13 +27,13 @@ def test_export_docx_roundtrip(tmp_path: Path) -> None:
     assert text == "Первая строка\nВторая строка"
 
 
-def test_files_match_jsonl() -> None:
-    """Каждый экспортированный файл соответствует тексту своей записи JSONL."""
+def test_exported_files_match_current_train() -> None:
+    """Файлы соответствуют текущей обучающей выборке (неделя 4: 30 файлов)."""
     rows = {
         r["id"]: r
         for r in (
             json.loads(line)
-            for line in Path("dataset/train/train_w3.jsonl")
+            for line in Path("dataset/train/train_w4.jsonl")
             .read_text(encoding="utf-8")
             .splitlines()
         )
@@ -58,12 +58,8 @@ def test_files_match_jsonl() -> None:
 def test_control_templates_disjoint_from_train() -> None:
     train = {
         r["template"]
-        for r in (
-            json.loads(line)
-            for line in Path("dataset/train/train_w3.jsonl")
-            .read_text(encoding="utf-8")
-            .splitlines()
-        )
+        for name in ("dataset/train/train_w3.jsonl", "dataset/train/train_w4.jsonl")
+        for r in (json.loads(line) for line in Path(name).read_text(encoding="utf-8").splitlines())
     }
     control = {
         r["template"]
