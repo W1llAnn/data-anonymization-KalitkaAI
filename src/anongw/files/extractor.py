@@ -10,6 +10,7 @@ from __future__ import annotations
 import base64
 import binascii
 import io
+from typing import Any
 
 from anongw.config import Settings
 from anongw.contracts import UnsupportedInputError
@@ -47,20 +48,47 @@ def _decode_txt(data: bytes) -> str:
 
 
 def _extract_docx(data: bytes) -> str:
-    """DOCX: параграфы и таблицы; метаданные документа не читаем вовсе."""
-    from docx import Document  # импорт внутри: зависимость нужна только для DOCX
+    """DOCX: параграфы и таблицы в порядке следования; метаданные не читаем вовсе.
+
+    Формат таблиц (согласован, docs/files/README.md): строка таблицы →
+    «ячейка; ячейка», объединённые ячейки не дублируются (python-docx
+    возвращает одну и ту же ячейку в row.cells несколько раз).
+    """
+    from docx import Document
+    from docx.oxml.ns import qn
+    from docx.table import Table
+    from docx.text.paragraph import Paragraph
 
     try:
         document = Document(io.BytesIO(data))
-        parts = [p.text for p in document.paragraphs if p.text.strip()]
-        for table in document.tables:
-            for row in table.rows:
-                cells = [cell.text.strip() for cell in row.cells]
-                if any(cells):
-                    parts.append("; ".join(cells))
+        parts: list[str] = []
+        body = document.element.body
+        for child in body.iterchildren():  # порядок документа сохраняется
+            if child.tag == qn("w:p"):
+                paragraph = Paragraph(child, document)
+                if paragraph.text.strip():
+                    parts.append(paragraph.text)
+            elif child.tag == qn("w:tbl"):
+                table = Table(child, document)
+                parts.extend(_table_rows(table))
     except Exception as exc:  # повреждённые/не-DOCX файлы дают разные исключения библиотеки
         raise UnsupportedInputError(f"Не удалось прочитать DOCX: {exc}") from exc
     return "\n".join(parts).strip()
+
+
+def _table_rows(table: Any) -> list[str]:
+    """Строки таблицы: непустые ячейки через «; », дубли объединённых схлопываются."""
+    rows: list[str] = []
+    for row in table.rows:
+        cells: list[str] = []
+        for cell in row.cells:
+            text = cell.text.strip()
+            if not cells or cells[-1] != text:  # merge дублирует ячейку в row.cells
+                cells.append(text)
+        cells = [cell for cell in cells if cell]  # пустые ячейки не сериализуем
+        if cells:
+            rows.append("; ".join(cells))
+    return rows
 
 
 class TxtDocxFileExtractor:
