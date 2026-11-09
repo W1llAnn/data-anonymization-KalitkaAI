@@ -149,12 +149,14 @@ async def test_users_isolated_by_header(service_client: AsyncClient) -> None:
     assert "PHONE_1" in _answer(second.json())
 
 
-async def test_stream_returns_not_implemented(service_client: AsyncClient) -> None:
+async def test_stream_works_since_week4(service_client: AsyncClient) -> None:
+    """SSE реализован в неделе 4 — поток отдаётся (подробности в test_sse.py)."""
     response = await service_client.post(
         "/v1/responses", json={"model": "mock-echo", "input": "текст", "stream": True}
     )
-    assert response.status_code == 501
-    assert response.json()["error"]["type"] == "not_implemented"
+    assert response.status_code == 200
+    assert response.headers["content-type"].startswith("text/event-stream")
+    assert "response.created" in response.text
 
 
 async def test_model_error_propagates(service_client: AsyncClient) -> None:

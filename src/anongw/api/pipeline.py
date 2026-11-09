@@ -53,7 +53,7 @@ async def build_model_payload(
     async def anon(text: str) -> str:
         return (await anonymizer.anonymize(text, user_id=user_id, context_id=context_id)).text
 
-    payload: dict[str, Any] = {"model": request.model, "store": False}
+    payload: dict[str, Any] = {"model": request.model, "store": False, "stream": request.stream}
 
     if request.instructions:
         payload["instructions"] = await anon(request.instructions)

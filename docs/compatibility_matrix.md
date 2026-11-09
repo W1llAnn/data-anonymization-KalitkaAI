@@ -17,7 +17,7 @@
 | `store=false` | ✅ | значение по умолчанию |
 | `store=true` | 🚫 | 400: «не хранит состояние, история — явно в input» |
 | `stream=false` | ✅ | обычный JSON-ответ |
-| `stream=true` | ⏳ неделя 4 | пока 501 not_implemented |
+| `stream=true` | ✅ | SSE-события Responses API ретранслируются потоком; подстановка в поток — неделя 6 |
 | `tools[].type=function` (одна тестовая функция) | ⏳ неделя 5 | схема принимается, цикл в разработке |
 | `tools[].type`≠function (`web_search` и пр.) | 🚫 | 400: «только function» |
 | `previous_response_id` | 🚫 | 400: поле вне профиля |
