@@ -23,6 +23,12 @@ dev = [
     "pytest-asyncio>=0.23",
     "ruff>=0.5",
     "mypy>=1.10",
+    "numpy>=1.26",
+]
+ml = [
+    "torch>=2.4",
+    "transformers>=4.44",
+    "accelerate>=0.33",
 ]
 
 [tool.setuptools.packages.find]
@@ -37,6 +43,7 @@ asyncio_mode = "auto"
 markers = [
     "unit: быстрые изолированные проверки компонентов",
     "integration: сквозные проверки с локальным HTTP и mock-LLM",
+    "ml: проверки с токенизатором/моделью (локально, не в CI)",
 ]
 
 [tool.ruff]

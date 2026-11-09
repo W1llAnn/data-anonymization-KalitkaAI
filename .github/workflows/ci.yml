@@ -36,7 +36,7 @@ jobs:
           python -m dataset.generator.validate /tmp/samples.jsonl
 
       - name: Pytest (unit)
-        run: pytest -q -m unit
+        run: pytest -q -m "unit and not ml"
 
       # Код 5 — «тесты не найдены»: интеграционные проверки добавляет Р6
       - name: Pytest (integration)
