@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import AsyncIterator
 from typing import Any
 
 import httpx
@@ -35,3 +36,23 @@ class HttpxUpstreamClient:
             raise UpstreamError(f"Ошибка внешней модели: {exc}") from exc
         data: dict[str, Any] = response.json()
         return data
+
+    async def stream_response(self, payload: dict[str, Any]) -> AsyncIterator[str]:
+        """Стриминг SSE-событий от внешней модели построчно.
+
+        Ошибки до первого события превращаются в UpstreamError; корректное
+        завершение потока событием ошибки при обрыве в середине — неделя 5.
+        """
+        try:
+            async with httpx.AsyncClient(timeout=self._timeout) as client:
+                async with client.stream(
+                    "POST",
+                    f"{self._base_url}/v1/responses",
+                    json=payload,
+                    headers={"Authorization": f"Bearer {self._api_key}"},
+                ) as response:
+                    response.raise_for_status()
+                    async for line in response.aiter_lines():
+                        yield line
+        except httpx.HTTPError as exc:
+            raise UpstreamError(f"Ошибка внешней модели: {exc}") from exc

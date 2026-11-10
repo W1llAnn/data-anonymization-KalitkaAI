@@ -88,6 +88,15 @@
 | 35 (заготовка) | нет ПДн в логах (caplog) | `test_contract_profile.py::test_035_no_pii_in_service_logs` |
 | — | персоны/адреса e2e | `test_e2e_names.py` |
 
+## Закрыто на неделе 4
+
+| № реестра | Проверка | Тест |
+|---|---|---|
+| 24 | DOCX: параграфы и таблицы в конвейере | `test_file_pipeline.py::test_024_docx_pipeline_anonymized` |
+| 25 | TXT CP1251 / UTF-16 через конвейер | `test_file_pipeline.py::test_025_cp1251_file_through_pipeline`, `test_025_utf16_file_through_pipeline` |
+| 29 | имя и метаданные файла не пересылаются | `test_file_pipeline.py::test_029_filename_and_metadata_not_leaked` |
+| 5 | SSE: порядок событий | `test_sse.py::test_005_stream_events_in_order` (+ дельты/согласованность рядом) |
+
 ## Требования к каждой проверке при реализации
 
 1. Известные ПДн фиксируются в тесте как константы; после прогона — их отсутствие

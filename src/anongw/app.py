@@ -24,10 +24,19 @@ _logger = logging.getLogger("anongw.mapping")
 
 
 async def _ttl_cleanup_loop(store: MappingStore, interval_seconds: int) -> None:
-    """Фоновая очистка просроченных записей (план: docs/mapping/context-id.md)."""
+    """Фоновая очистка просроченных записей (план: docs/mapping/context-id.md).
+
+    Ошибка одной итерации (например, временная недоступность базы) не убивает
+    задачу: логируем и продолжаем — фильтрация по expires_at идёт в каждом
+    запросе, так что корректность от фоновой чистки не зависит.
+    """
     while True:
         await asyncio.sleep(interval_seconds)
-        removed = await store.cleanup_expired()
+        try:
+            removed = await store.cleanup_expired()
+        except Exception:  # noqa: BLE001 — задача обязана пережить любой сбой итерации
+            _logger.exception("TTL-очистка: ошибка итерации, продолжаю работу")
+            continue
         if removed:
             _logger.info("TTL-очистка: удалено записей — %d", removed)
 
